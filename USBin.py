@@ -25,25 +25,35 @@ def gui(drive):
 	valid_types = {"D:/", "E:/", "F:/", "G:/", "H:/", "I:/", "J:/", "K:/", "L:/", "M:/", "N:/", "O:/", "P:/", "Q:/", "R:/", "S:/", "T:/", "U:/", "V:/", "W:/", "X:/", "Y:/", "Z:/"}
 	sg.ChangeLookAndFeel('Black')
 
-	global button
-	login = [
+	setup = [
 		[sg.Text('USBin Home', size=(30, 1), font=("Helvetica", 20), text_color='white')],
-		[sg.Text('This is the setup menu.', size=(20, 1), font=("Arial", 8), text_color='gray')], 
+		[sg.Text('This is the setup menu.', size=(20, 1.5), font=("Arial", 8), text_color='gray')], 
 		[sg.Input(drive ,size=(5, 1)), sg.FolderBrowse('Choose Device', size=(20, 1))],
-		[sg.Text('')], 
+		[sg.Checkbox('Create Desktop shortcut', key='shortcut', default=True, size=(30, 1.5))],
+		[sg.Text('')],
 		[sg.Submit('Done', button_color=('white', 'DarkGreen'), size=(30, 1.5))]
 	]
 
-	window = sg.Window('USBin').Layout(login)
+	window = sg.Window('USBin').Layout(setup)
 	button, device = window.Read()
 	window.Hide()
 
+	print("Button: " + button)
+	print("Device: " + str(device["shortcut"]))
 
 	if button in (None, 'Quit'):
 		sys.exit()
-	if (button == "Done"):
+	elif (button == "Done"):
+
 		try:
 			os.mkdir("C:/USBin_data")
+		except:
+			pass
+		try:
+			if (device["shortcut"]):
+				desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), ('Desktop\\' + sys.argv[0]))
+				software = os.getcwd() + '\\' + sys.argv[0]
+				os.symlink(software, desktop)
 		except:
 			pass
 		with open(drive_path, "w") as f:
@@ -58,37 +68,39 @@ def gui(drive):
 
 
 if len(sys.argv) > 1:
-	# src_path = os.getcwd() + '\\' + sys.argv[1]
-	src_path = sys.argv[1]
+	src_paths = []
+	dst_paths = []
+	filenames = []
+	for i in range(len(sys.argv)-1):
+		src_paths.append(sys.argv[i+1])
+		file = sys.argv[i+1].split("\\")
+		filenames.append(file[len(file)-1])
 	print("Current dir: " + os.getcwd())
-	print("Selected file: '" + src_path + "'")
-	dst_path = ''
+	print("Selected file: '" + src_paths[i] + "'")
+
+
 	try:
-		# with open((os.getcwd()+"\\drive.txt"), "r+") as f:
 		with open(drive_path, "r+") as f:
-			filename = sys.argv[1].split("\\")
-			filename = filename[len(filename)-1]
-			dst_path = f.readline() + filename
-			print(dst_path)
+			dst = f.readline()
+			print(dst)
 			f.close()
+		for i in range(len(filenames)):
+			dst_paths.append(dst + filenames[i])
+			# errorPopup("Destination: " + dst + filenames[i])
 	except:
 		errorPopup("Unable to locate the destination drive. \nTry setting it up from the USBin setup menu")
 	
 
-
 	try:
-		shutil.copyfile(src_path, dst_path)
-		print("File successfully transfered.")
-		os.remove(src_path)
+		for i in range(len(dst_paths)):
+			shutil.copyfile(src_paths[i], dst_paths[i])
+			os.remove(src_paths[i])
+			print("File successfully transfered.")
 	except:
-		errorPopup("Make sure that the destination device " + "(" + dst_path + ") is available.")
+		errorPopup("Make sure that the destination device " + "(" + dst_paths + ") is available.")
 
 else:
 	drive = ''
-	# with open(drive_path, "r+") as f:
-	# 		drive = f.readline()
-	# 		print("Selected drive: " + drive)
-	# 		f.close()
 	try:
 		with open(drive_path, "r+") as f:
 			drive = f.readline()
