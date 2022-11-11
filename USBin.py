@@ -39,7 +39,7 @@ def gui(drive, quarantine=False):
 	valid_types = {"D:/", "E:/", "F:/", "G:/", "H:/", "I:/", "J:/", "K:/", "L:/", "M:/", "N:/", "O:/", "P:/", "Q:/", "R:/", "S:/", "T:/", "U:/", "V:/", "W:/", "X:/", "Y:/", "Z:/"}
 	sg.ChangeLookAndFeel('Black')
 	status_changed = False
-	# print("QQQ: " + quarantine)
+	print("QQQ: " + quarantine)
 	# [sg.InputText(password_char='*')],
 
 	setup = [
@@ -47,9 +47,11 @@ def gui(drive, quarantine=False):
 		[sg.Text('This is the setup menu.', size=(20, 1.5), font=("Arial", 8), text_color='gray')], 
 		[sg.Input(drive, size=(5, 1)), sg.FolderBrowse('Choose Device', size=(20, 1))],
 		[sg.Checkbox('Create Desktop shortcut', key='SHORTCUT', default=True, size=(30, 1.5))],
-		[sg.Checkbox('Keep files in quarantine', key='QUARANTINE', default=bool(quarantine=="True"), enable_events=True)],
 		[sg.Text('')],
+		[sg.Checkbox('Keep files in quarantine', key='QUARANTINE', default=bool(quarantine=="True"), enable_events=True)],
+		[sg.Checkbox('Update files in quarantine', key='UPDATEQ', visible=bool(quarantine=="True"), enable_events=True)],
 		[sg.Text('Password:', size=(10, 1), key='LABEL', visible=False), sg.InputText(password_char='*', key='PASSWD', size=(19.5, 1), visible=False)],
+		[sg.Text('')],
 		[sg.Submit('Done', button_color=('white', 'DarkGreen'), size=(30, 1.5))]
 	]
 
@@ -64,6 +66,9 @@ def gui(drive, quarantine=False):
 		print("Button: " + button)
 		# print("Device: " + str(device["SHORTCUT"]))
 
+		print("QQQ2: " + str(type(quarantine)))
+
+
 		if button in (None, 'Quit'):
 			sys.exit()
 		elif (button == "QUARANTINE"):
@@ -71,6 +76,10 @@ def gui(drive, quarantine=False):
 			print(device["QUARANTINE"])
 			quarantine = False
 			status_changed = True
+			if (device["QUARANTINE"]):
+				window.Element('UPDATEQ').Update(visible=True)
+			else:
+				window.Element('UPDATEQ').Update(visible=False)
 			try:
 				with open(quarantine_path, "r+") as f:
 					quarantine = f.readline()
@@ -81,16 +90,17 @@ def gui(drive, quarantine=False):
 					f.write(str(device["QUARANTINE"]))
 					f.close()
 
-			# if (device["QUARANTINE"]):
 			window.Element('LABEL').Update(visible=True)
 			window.Element('PASSWD').Update(visible=True)
-			# print(str(window.Element('PASSWD').get(visible)))
-			# else:
-			# window.Element('LABEL').Update(visible=False)
-			# window.Element('PASSWD').Update(visible=False)
 			window.Refresh()
-		elif (button == "Done"):
+		
+		elif (button == "UPDATEQ"):
+			if(device["UPDATEQ"]):
+				window.Element('LABEL').Update(visible=True)
+				window.Element('PASSWD').Update(visible=True)
+				window.Refresh()
 
+		elif (button == "Done"):
 			try:
 				os.mkdir("C:/USBin_data")
 			except:
@@ -109,7 +119,7 @@ def gui(drive, quarantine=False):
 
 			if (device[0] in valid_types):
 				window.Hide()
-				if (status_changed):
+				if (status_changed or device["UPDATEQ"]):
 					if (len(str(device["PASSWD"])) > 0):
 						# print("My passwd: " + device["PASSWD"])
 						fileWrite(quarantine_path, device["QUARANTINE"])
@@ -127,9 +137,6 @@ def gui(drive, quarantine=False):
 								if (file[-3:].lower() == "aes"):
 									aes.decryptFile((device[0]+file), (device[0]+file[:-4]), device["PASSWD"])
 									os.remove(device[0]+file)
-							
-
-
 					else:
 						errorPopup("Not a valid password.")
 						# print("ERROR NOT A VALID PASSWORD")
