@@ -13,10 +13,12 @@ The software is currently only available on Windows
 
 ### Usage
 Start the program (it's portable so don't worry about where you're going to put it)
-<img src="previews/Home.png" alt="Home" width="35%"/>
+<br>
+<img src="logo/Home.png" alt="Home" width="35%"/>
 <br>
 Then check all your preferences, if you want to edit the quarantine settings you'll have to write a password 
-<img src="previews/Edit.png" alt="Edit" width="25%"/>
+<br>
+<img src="logo/Edit.png" alt="Edit" width="25%"/>
 <br>
 The quarantine can be updated by the specific option, this will put in quarantine all the new files that are inside the destination folder
 
